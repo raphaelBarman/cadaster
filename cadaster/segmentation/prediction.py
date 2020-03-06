@@ -36,9 +36,9 @@ class Predictor:
                         total=(len(y_pos)*len(x_pos))//batch_size+1):
             crops = np.stack([pos2crop(image_padded, x, y, self.tile_size, self.margin) for x, y in pos])
             probs = imgs2preds(crops, self.model, device, self.margin)
-            for idx, (y, x) in enumerate(pos):
-                counts[x:x+self.tile_size[1], y:y+self.tile_size[0]] += 1
-                probs_sum[:, x:x+self.tile_size[1], y:y+self.tile_size[0]] += probs[idx]
+            for idx, (x, y) in enumerate(pos):
+                counts[x:x+self.tile_size[0], y:y+self.tile_size[1]] += 1
+                probs_sum[:, x:x+self.tile_size[0], y:y+self.tile_size[1]] += probs[idx]
         probs = probs_sum/counts
 
         return probs
