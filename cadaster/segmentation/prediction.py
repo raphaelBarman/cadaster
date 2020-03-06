@@ -18,25 +18,27 @@ class Predictor:
 
     def predict(self, raster: Raster, batch_size: int = 4, device: str = 'cpu') -> np.array:
         h, w = raster.size
-        y_step = self.compute_step(h, self.tile_size[0], self.margin, self.min_overlap)
-        x_step = self.compute_step(w, self.tile_size[1], self.margin, self.min_overlap)
-        y_pos = np.round(np.arange(y_step + 1) / y_step * (h - self.tile_size[0])).astype(np.int32)
-        x_pos = np.round(np.arange(x_step + 1) / x_step * (w - self.tile_size[1])).astype(np.int32)
+        x_step = self.compute_step(h, self.tile_size[0], self.margin, self.min_overlap)
+        y_step = self.compute_step(w, self.tile_size[1], self.margin, self.min_overlap)
+
+        x_pos = np.round(np.arange(x_step + 1) / x_step * (h - self.tile_size[0])).astype(np.int32)
+        y_pos = np.round(np.arange(y_step + 1) / y_step * (w - self.tile_size[1])).astype(np.int32)
+
 
         image = raster.image()
         margin = self.margin
-        image_padded = np.pad(image, ((margin,margin),(margin,margin),(0,0)), mode='reflect')
+        image_padded = np.pad(image, ((margin, margin), (margin, margin), (0, 0)), mode='reflect')
 
         counts = np.zeros(raster.size, dtype=np.int)
         probs_sum = np.zeros([7] + list(raster.size))
 
-        for pos in tqdm(batch_items(list(product(y_pos, x_pos)), batch_size),
+        for pos in tqdm(batch_items(list(product(x_pos, y_pos)), batch_size),
                         total=(len(y_pos)*len(x_pos))//batch_size+1):
             crops = np.stack([pos2crop(image_padded, x, y, self.tile_size, self.margin) for x, y in pos])
             probs = imgs2preds(crops, self.model, device, self.margin)
             for idx, (y, x) in enumerate(pos):
-                counts[y:y+self.tile_size[0], x:x+self.tile_size[1]] += 1
-                probs_sum[:,y:y+self.tile_size[0], x:x+self.tile_size[1]] += probs[idx]
+                counts[x:x+self.tile_size[1], y:y+self.tile_size[0]] += 1
+                probs_sum[:, x:x+self.tile_size[1], y:y+self.tile_size[0]] += probs[idx]
         probs = probs_sum/counts
 
         return probs
@@ -65,4 +67,4 @@ def imgs2preds(imgs, model, device='cpu', margin=16) -> torch.Tensor:
 
 def pos2crop(image: np.array, x: int, y: int,
              tile_size: Union[int, Tuple[int, int]]=(500, 500), margin: int = 0) -> np.array:
-    return image[y:y+tile_size[0]+margin*2,x:x+tile_size[1]+margin*2]
+    return image[x:x+tile_size[0]+margin*2, y:y+tile_size[1]+margin*2]
