@@ -44,7 +44,7 @@ class Raster:
 
     @property
     def size(self):
-        return ImageSize(self.width, self.height)
+        return ImageSize(self.height, self.width)
 
 
     @staticmethod
