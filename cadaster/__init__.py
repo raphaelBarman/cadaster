@@ -1,2 +1,2 @@
-from cadaster.gis import Raster
-from cadaster.segmentation import Predictor
+from cadaster.gis import Raster, read_osm
+from cadaster.segmentation.prediction import Predictor

@@ -1,0 +1,40 @@
+raster: ???
+osm: ???
+
+classes_out: ???
+mask_out: ???
+
+progress: true
+
+edges:
+    use: true
+    width: 3
+    color: "#7c4dff"
+nodes:
+  use: true
+  radius: 3
+  color: "#00695c"
+no_class_overlap: true
+multilabel: true
+
+classes:
+  - name: road
+    color: "#FFF8E1"
+    filter:
+      highway: "pedestrian"
+      area: "yes"
+  - name: water
+    color: "#80D8FF"
+    filter: water
+  - name: sottoportico
+    color: "#FFD600"
+    filter:
+      building: roof
+  - name: courtyard
+    color: "#FCE4EC"
+    filter:
+      landuse: residential
+  - name: building
+    color: "#F06292"
+    filter:
+      building: "yes"
